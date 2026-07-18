@@ -1,0 +1,85 @@
+/**
+ * @fileoverview Long-term Environmental Monitoring: Land Surface Temperature (LST) Analysis (2001-2022)
+ * @description Processes time-series MODIS LST thermal data, converts raw DN values to Celsius,
+ *              calculates a multi-decadal mean baseline, and packages high-resolution geospatial products 
+ *              for desertification assessments in Rajasthan, India.
+ */
+
+// =========================================================================
+// 1. REGIONAL CONFIGURATION & STUDY AREA
+// =========================================================================
+
+// Load administrative boundaries (GAUL Level 1)
+var administrativeBoundaries = ee.FeatureCollection("FAO/GAUL/2015/level1");
+
+// Filter for the specific region of interest (Rajasthan)
+var studyArea = administrativeBoundaries.filter(ee.Filter.eq('ADM1_NAME', 'Rajasthan'));
+
+// Center map view over the study area with an appropriate zoom level
+Map.centerObject(studyArea, 6);
+
+// =========================================================================
+// 2. DATA ACQUISITION & THERMAL CONVERSION
+// =========================================================================
+
+var START_DATE = '2001-01-01';
+var END_DATE = '2022-12-31';
+
+// Initialize MODIS 1km 8-day LST composite collection
+var rawLstCollection = ee.ImageCollection("MODIS/061/MOD11A2")
+    .filterBounds(studyArea)
+    .filterDate(START_DATE, END_DATE)
+    .select('LST_Day_1km');
+
+/**
+ * Converts raw MODIS DN values to physical units (Kelvin) via scale factor (0.02)
+ * and applies offset transformation to yield Land Surface Temperature in Celsius.
+ * @param {ee.Image} image - Raw input MODIS LST image.
+ * @return {ee.Image} Clipped LST image in Celsius preserving system timestamps.
+ */
+var convertToCelsius = function(image) {
+  var celsiusImage = image.multiply(0.02).subtract(273.15);
+  return celsiusImage.clip(studyArea)
+                     .copyProperties(image, ['system:time_start']);
+};
+
+// Map conversion function across the historical time-series collection
+var processedLstCollection = rawLstCollection.map(convertToCelsius);
+
+// =========================================================================
+// 3. SPATIAL AGGREGATION & ANALYTICS
+// =========================================================================
+
+// Compute the long-term temporal mean LST across the 22-year baseline window
+var meanLstBaseline = processedLstCollection.mean().rename('Mean_LST_Celsius');
+
+// =========================================================================
+// 4. VISUALIZATION & INTERACTIVE MAPPING
+// =========================================================================
+
+// Define professional high-contrast thermal palette for arid environments
+var thermalVisualization = {
+  min: 25.0, 
+  max: 45.0, 
+  palette: ['#4575b4', '#74add1', '#fee090', '#f46d43', '#d73027']
+};
+
+// Display the multi-decadal mean LST onto the interactive map console
+Map.addLayer(meanLstBaseline, thermalVisualization, 'Mean LST Baseline (2001-2022)');
+
+// =========================================================================
+// 5. CLOUD EXPORT PIPELINE
+// =========================================================================
+
+// Stage native 1km resolution GeoTIFF analytics product for export
+Export.image.toDrive({
+  image: meanLstBaseline,
+  description: 'Rajasthan_Mean_LST_Baseline_2001_2022',
+  folder: 'GEE_Output_Data',
+  scale: 1000, // Matches native sensor footprint resolution for MOD11A2
+  region: studyArea.geometry(),
+  fileFormat: 'GeoTIFF',
+  maxPixels: 1e9
+});
+
+print('System Status: GeoTIFF Export Pipeline Initialized. Navigate to the "Tasks" panel to run the cloud process.');
