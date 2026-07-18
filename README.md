@@ -19,3 +19,8 @@ A collection of Google Earth Engine (GEE) scripts focused on spatial data scienc
 1. Copy the code from the respective `.js` file in this repository.
 2. Paste it into the [Google Earth Engine Code Editor](https://code.earthengine.google.com/).
 3. Click **Run** to visualize the interactive maps and charts.
+
+## 🧠 Learning & Development Notes
+*   **Methodology:** These scripts were developed as part of my practical learning journey in spatial data science. 
+*   **AI Collaboration:** Because I am currently mastering Python and transitioning into JavaScript for Earth Engine, I utilized AI tools to assist with syntax structure, code optimization, and debugging.
+*   **Focus:** My primary focus on this project was defining the environmental logic, selecting the appropriate satellite datasets (like MODIS and Landsat), and validating the geospatial outputs.
