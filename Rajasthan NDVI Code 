@@ -1,0 +1,110 @@
+/**
+ * @fileoverview Long-term Environmental Monitoring: NDVI Trend Analysis (2001-2022)
+ * @description Computes regional vegetation dynamics, trends (Linear Regression), 
+ *              and exports high-resolution geospatial products for Rajasthan, India.
+ */
+
+// =========================================================================
+// 1. REGIONAL CONFIGURATION & STUDY AREA
+// =========================================================================
+
+// Load administrative boundaries (GAUL Level 1)
+var administrativeBoundaries = ee.FeatureCollection("FAO/GAUL/2015/level1");
+
+// Filter for the specific region of interest (Rajasthan)
+var studyArea = administrativeBoundaries.filter(ee.Filter.eq('ADM1_NAME', 'Rajasthan'));
+
+// Center map view over the study area with an appropriate zoom level
+Map.centerObject(studyArea, 6);
+
+// =========================================================================
+// 2. DATA ACQUISITION & PRE-PROCESSING
+// =========================================================================
+
+var START_DATE = '2001-01-01';
+var END_DATE = '2022-12-31';
+
+// Initialize MODIS 250m 16-day NDVI composite collection
+var modisCollection = ee.ImageCollection("MODIS/061/MOD13Q1")
+    .filterDate(START_DATE, END_DATE)
+    .filterBounds(studyArea)
+    .select('NDVI');
+
+/**
+ * Applies the MODIS specific scale factor (0.0001) to reconstruct true NDVI values.
+ * @param {ee.Image} image - Raw input MODIS image.
+ * @return {ee.Image} Scaled image preserving system timestamps.
+ */
+var scaleNdvi = function(image) {
+  return image.multiply(0.0001)
+              .copyProperties(image, ['system:time_start']);
+};
+
+var processedCollection = modisCollection.map(scaleNdvi);
+
+// =========================================================================
+// 3. SPATIAL TREND ANALYSIS (LINEAR REGRESSION)
+// =========================================================================
+
+/**
+ * Appends a normalized time band (in years since base date) to serve as the independent variable.
+ * @param {ee.Image} image - Pre-processed NDVI image.
+ * @return {ee.Image} Image with an additional float time band 't'.
+ */
+var addTimeBand = function(image) {
+  var timeInYears = ee.Date(image.get('system:time_start'))
+                        .difference(ee.Date(START_DATE), 'year');
+  return image.addBands(ee.Image(timeInYears).rename('t').float());
+};
+
+// Map time band allocation and reduce via linear fit to extract slope and intercept
+var linearFitRegression = processedCollection.map(addTimeBand)
+                                                .select(['t', 'NDVI'])
+                                                .reduce(ee.Reducer.linearFit());
+
+// =========================================================================
+// 4. VISUALIZATION & USER INTERFACE
+// =========================================================================
+
+// Define professional palette representing degradation (red), stability (white), and greening (green)
+var visualizationParameters = {
+  min: -0.01, 
+  max: 0.01, 
+  bands: ['scale'], 
+  palette: ['#d73027', '#f7f7f7', '#1a9850']
+};
+
+// Display clipped trend layer onto the map console
+Map.addLayer(linearFitRegression.clip(studyArea), visualizationParameters, 'NDVI Linear Trend (2001-2022)');
+
+// Generate optimized time-series chart utilizing an aggregated scale for performance
+var ndviTimeSeriesChart = ui.Chart.image.series({
+  imageCollection: processedCollection,
+  region: studyArea,
+  reducer: ee.Reducer.mean(),
+  scale: 5000, // Downsampled spatial scale to ensure fluid UI rendering performance
+  xProperty: 'system:time_start'
+}).setOptions({
+  title: 'Regional Mean NDVI Long-Term Profile (2001-2022)',
+  vAxis: {title: 'Normalized Difference Vegetation Index (NDVI)'},
+  hAxis: {title: 'Timeline'},
+  lineWidth: 2,
+  colors: ['#238b45']
+});
+
+print(ndviTimeSeriesChart);
+
+// =========================================================================
+// 5. DATA EXPORT PIPELINE
+// =========================================================================
+
+// Export the native 250m resolution trend slope (scale band) to Google Drive
+Export.image.toDrive({
+  image: linearFitRegression.select('scale').clip(studyArea),
+  description: 'Rajasthan_NDVI_Linear_Trend_2001_2022',
+  folder: 'GEE_Output_Data',
+  scale: 250, // Native sensor resolution for MOD13Q1
+  region: studyArea,
+  fileFormat: 'GeoTIFF',
+  maxPixels: 1e9
+});
