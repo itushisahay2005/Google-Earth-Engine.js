@@ -1,40 +1,35 @@
 # Google-Earth-Engine.js
-# Google Earth Engine (GEE) Code Vault & Project Repository
+# Google Earth Engine (GEE) Central Code Vault
 
-Welcome to my central repository for Google Earth Engine (GEE) scripts. This is a general, evolving space where I store and document my practical workflows, code snippets, and academic models focused on spatial data science, environmental monitoring, and remote sensing analysis.
-
----
-
-## 🚀 Repository Purpose & Project Index
-
-This repository serves as a digital logbook for my geospatial processing workflows. The scripts included here address diverse environmental and urban challenges:
-
-### 1. Regional Vegetation & Desertification Analysis (Rajasthan)
-*   **Objective:** Mapped concurrent regional trends of greening, land surface temperature variations, and desertification using long-term satellite imagery.
-*   **Data Used:** Landsat/MODIS NDVI (Normalized Difference Vegetation Index) time-series raster data, LST (Land Surface Temperature) products, and land cover classification models.
-*   **Key Findings:** Processed multi-decadal raster data to track vegetation dynamics, surface temperature anomalies, and the spatial expansion of bare land across arid and semi-arid zones.
-
-### 2. Khan River Hydrological Risk Model & Urban Audit (Indore)
-*   **Objective:** Formulated a geospatial audit and hydrological risk framework focusing on hidden drainage networks and urban river corridors.
-*   **Data Used:** Digital Elevation Models (DEM), watershed processing toolsets, and automated stream segment tracing.
-*   **Key Findings:** Successfully mapped drainage catchments to identify zones where urban encroachment overlaps with high flooding vulnerability.
-
-*(More script modules and geospatial logic files will be committed directly to this repository as they are developed.)*
+Welcome to my primary repository for Google Earth Engine (GEE) development. This is a general, evolving portfolio space where I document my practical scripts, custom algorithms, and data processing workflows focused on spatial data science, environmental tracking, and remote sensing.
 
 ---
 
-## 🧰 Tech Stack & Core Geospatial Concepts
-*   **Platform:** Google Earth Engine (GEE) API (Cloud-based planetary data processing)
+## 🚀 Repository Purpose & Geospatial Focus
+
+This repository serves as a digital logbook for my planetary-scale data processing workflows. Instead of isolated code files, the scripts contained here represent end-to-end analytical pipelines handling diverse environmental, terrain, and urban challenges:
+
+*   **Time-Series Analysis:** Processing multi-decadal raster datasets to extract long-term environmental trends, identify anomalies, and map land-surface dynamics.
+*   **Terrain & Hydrological Analysis:** Utilizing digital elevation data, watershed processing toolsets, and stream tracing logic to model drainage networks and assess structural risks.
+*   **Surface Temperature Analytics:** Processing thermal imagery bands to compute regional land surface temperature variations over custom timeframes.
+*   **Vegetation Dynamics:** Utilizing multi-spectral bands to engineer index calculations that monitor regional greening and degradation trends.
+
+---
+
+## 🧰 Tech Stack & Core Concepts
+
+*   **Platform:** Google Earth Engine (GEE) API (Cloud-based imagery processing)
 *   **Languages:** JavaScript (Web Editor API) / Python (Geospatial API ecosystems)
-*   **Core Methodologies:** Multi-spectral raster calculation, Time-series analysis, Watershed modeling, Digital Elevation Processing, and Trend Mapping.
+*   **Data Products:** Landsat imagery, MODIS time-series datasets, Digital Elevation Models (DEM), and multi-spectral raster classification assets.
+*   **Core Methodologies:** Multi-spectral raster calculations, automated drainage modeling, trend line mapping, and raster extraction.
 
 ---
 
 ## 🧠 Development Methodology & AI Collaboration
 
-*   **Learning Journey:** This repository reflects my transition into advanced spatial data science. I am deeply focused on mastering Python workflow ecosystems while actively utilizing JavaScript for rapid prototyping within the native GEE Code Editor.
-*   **AI Integration:** To accelerate my development pace and bridge technical syntax gaps, **these scripts were built in close collaboration with generative AI tools**. AI was heavily leveraged to optimize code structure, debug complex API functions, and refine scripts.
-*   **My Core Focus:** While AI assisted with the programming syntax, my primary ownership and focus remained on the **geospatial logic**—including defining the environmental hypotheses, engineering the data workflows, selecting appropriate satellite assets, and validating the final analytical outputs.
+*   **Learning Journey:** This repository reflects my deep dive into advanced spatial data science. I am currently mastering Python workflow ecosystems while using JavaScript for rapid prototyping directly within the native GEE Code Editor.
+*   **AI Integration:** To accelerate my development pace and bridge technical syntax gaps while learning, **these scripts were built in close collaboration with generative AI tools**. AI was leveraged to optimize code structure, debug complex API functions, and refine scripts.
+*   **My Core Focus:** While AI assisted with the programming syntax, my primary ownership and focus remained on the **geospatial logic**—including defining the analytical hypotheses, engineering the data workflows, selecting the appropriate satellite assets, and validating the final analytical outputs.
 
 ---
 
