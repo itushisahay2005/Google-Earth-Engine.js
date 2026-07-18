@@ -5,23 +5,11 @@ Welcome to my primary repository for Google Earth Engine (GEE) development. This
 
 ---
 
-## 🚀 Repository Purpose & Geospatial Focus
-
-This repository serves as a digital logbook for my planetary-scale data processing workflows. Instead of isolated code files, the scripts contained here represent end-to-end analytical pipelines handling diverse environmental, terrain, and urban challenges:
-
-*   **Time-Series Analysis:** Processing multi-decadal raster datasets to extract long-term environmental trends, identify anomalies, and map land-surface dynamics.
-*   **Terrain & Hydrological Analysis:** Utilizing digital elevation data, watershed processing toolsets, and stream tracing logic to model drainage networks and assess structural risks.
-*   **Surface Temperature Analytics:** Processing thermal imagery bands to compute regional land surface temperature variations over custom timeframes.
-*   **Vegetation Dynamics:** Utilizing multi-spectral bands to engineer index calculations that monitor regional greening and degradation trends.
-
----
-
 ## 🧰 Tech Stack & Core Concepts
 
 *   **Platform:** Google Earth Engine (GEE) API (Cloud-based imagery processing)
 *   **Languages:** JavaScript (Web Editor API) / Python (Geospatial API ecosystems)
 *   **Data Products:** Landsat imagery, MODIS time-series datasets, Digital Elevation Models (DEM), and multi-spectral raster classification assets.
-*   **Core Methodologies:** Multi-spectral raster calculations, automated drainage modeling, trend line mapping, and raster extraction.
 
 ---
 
