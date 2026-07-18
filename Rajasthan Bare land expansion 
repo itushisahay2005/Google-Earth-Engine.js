@@ -1,0 +1,97 @@
+/**
+ * @fileoverview Environmental Analytics: Desertification & Bare Land Expansion (2001-2022)
+ * @description Leverages the MODIS Land Cover product to isolate pixel-level transitions
+ *              into barren classification over a 21-year temporal window, computing net 
+ *              spatial expansion statistics and staging spatial exports for Rajasthan, India.
+ */
+
+// =========================================================================
+// 1. REGIONAL CONFIGURATION & STUDY AREA
+// =========================================================================
+
+// Load administrative boundaries (GAUL Level 1)
+var administrativeBoundaries = ee.FeatureCollection("FAO/GAUL/2015/level1");
+
+// Filter for the specific region of interest (Rajasthan)
+var studyArea = administrativeBoundaries.filter(ee.Filter.eq('ADM1_NAME', 'Rajasthan'));
+
+// Center map view over the study area with an appropriate zoom level
+Map.centerObject(studyArea, 7);
+
+// =========================================================================
+// 2. DATA ACQUISITION & LAND COVER EXTRACTION
+// =========================================================================
+
+// Load MODIS Land Cover Type Yearly Global 500m collection
+var landCoverDataset = ee.ImageCollection('MODIS/061/MCD12Q1');
+
+// Extract baseline historical land cover (2001) using the IGBP classification scheme
+var landCover2001 = landCoverDataset.filterDate('2001-01-01', '2001-12-31')
+                                    .first()
+                                    .select('LC_Type1')
+                                    .clip(studyArea);
+
+// Extract comparative recent land cover (2022)
+var landCover2022 = landCoverDataset.filterDate('2022-01-01', '2022-12-31')
+                                    .first()
+                                    .select('LC_Type1')
+                                    .clip(studyArea);
+
+// =========================================================================
+// 3. DESERTIFICATION TRAJECTORY ANALYSIS
+// =========================================================================
+
+// Isolate IGBP Class 16 (Barren or Sparsely Vegetated) for both temporal markers
+var bareLand2001 = landCover2001.eq(16);
+var bareLand2022 = landCover2022.eq(16);
+
+// Identify net bare land expansion: Pixels that became barren in 2022 but were NOT barren in 2001
+var netBareExpansion = bareLand2022.and(bareLand2001.not());
+
+// =========================================================================
+// 4. QUANTITATIVE SPATIAL STATISTICS
+// =========================================================================
+
+// Multiply binary expansion mask by precise individual pixel area ($m^2$)
+var expansionAreaImage = netBareExpansion.multiply(ee.Image.pixelArea());
+
+// Reduce the region to sum the total expanded metric area
+var regionalStatistics = expansionAreaImage.reduceRegion({
+  reducer: ee.Reducer.sum(),
+  geometry: studyArea,
+  scale: 500, // Matches native sensor footprint resolution for MCD12Q1
+  maxPixels: 1e13
+});
+
+// Convert calculated area from square meters ($m^2$) to square kilometers ($km^2$)
+var totalExpansionSqKm = ee.Number(regionalStatistics.get('LC_Type1')).divide(1e6);
+
+print('System Analytics Report:');
+print('Total Bare Land Expansion (2001-2022) in Sq Km:', totalExpansionSqKm);
+
+// =========================================================================
+// 5. VISUALIZATION & INTERACTIVE MAPPING
+// =========================================================================
+
+// Mask non-target values to preserve transparency across unaffected areas
+var maskedBaselineDesert = bareLand2001.updateMask(bareLand2001);
+var maskedNewExpansion = netBareExpansion.updateMask(netBareExpansion);
+
+// Render spatial layers onto the interactive map console
+Map.addLayer(maskedBaselineDesert, {palette: ['#0000ff']}, 'Baseline Barren Footprint (2001)');
+Map.addLayer(maskedNewExpansion, {palette: ['#ff0000']}, 'Identified Bare Expansion Zone (2022)');
+
+// =========================================================================
+// 6. CLOUD EXPORT PIPELINE
+// =========================================================================
+
+// Stage native 500m binary analytical layer for GIS Desktop mapping (QGIS/ArcGIS Pro)
+Export.image.toDrive({
+  image: netBareExpansion.toInt8(),
+  description: 'Rajasthan_Barren_Land_Expansion_2001_2022',
+  folder: 'GEE_Output_Data',
+  scale: 500,
+  region: studyArea.geometry().bounds(),
+  maxPixels: 1e13,
+  fileFormat: 'GeoTIFF'
+});
